@@ -27,8 +27,6 @@ if (argv.hasOwnProperty("cID")) {
 	opts.iID = argv.iID;
 }
 
-console.log('looking for container : ' + val);
-
 dm({
 	host: 'http://localhost', 
 	port: 4242
