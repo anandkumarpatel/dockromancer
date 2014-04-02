@@ -23,7 +23,7 @@ var argv = require('minimist')(process.argv.slice(2), {
 var opts = {};
 if (argv.hasOwnProperty("cID")) {
 	opts.containerId = argv.containerId;
-} else if (myObj.hasOwnProperty("iID")) {
+} else if (argv.hasOwnProperty("iID")) {
 	opts.iID = argv.iID;
 }
 
