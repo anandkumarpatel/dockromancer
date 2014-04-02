@@ -17,6 +17,9 @@ var argv = require('minimist')(process.argv.slice(2), {
 	alias: { 
 		cID: 'containerId',
 		iID: 'imageId'
+	},
+	default: {
+		r: false
 	}
 });
 
@@ -26,6 +29,7 @@ if (argv.hasOwnProperty("cID")) {
 } else if (argv.hasOwnProperty("iID")) {
 	opts.iID = argv.iID;
 }
+opts.doRestart = argv.r;
 
 dm({
 	host: 'http://localhost', 
