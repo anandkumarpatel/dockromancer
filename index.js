@@ -14,10 +14,12 @@ var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
 var Docker = require('dockerode');
-var docker = new Docker({socketPath: '/var/run/docker.sock'});
+var docker = new Docker({host: 'http://localhost', port: 4242});
 var watching = {};
 
-
+docker.version(function(data) {
+  console.log(data);
+});
 
 // finds running containers and attaches wait listener no them
 function discover(opts) {
@@ -25,7 +27,7 @@ function discover(opts) {
   var filter = function() {
     return true;
   };
-  if (opts.containerId) {
+  if (opts["containerId"]) {
     filter = function (obj) {
       if (obj.Id.indexOf(opts.containerId) === 0) {
         return true;
@@ -49,8 +51,9 @@ function discover(opts) {
   console.log("start");
   docker.listContainers(function(err, containers) {
     if (err) {
-      eventEmitter.Emit("error", "error getting list of containers err: "+err);
-      console.log("error", "error getting list of containers err: "+err);
+      eventEmitter.emit("msg", "error getting list of containers err: "+err);
+      console.log("msg", "error getting list of containers err: "+err);
+      return err;
     }
     containers.forEach(function(containerInfo) {
       if (filter(containerInfo)) {
@@ -64,30 +67,42 @@ function discover(opts) {
 function watchContainer (containerId, doRestart) {
   if (!containerId) {
     console.error("invalid containerId");
-    eventEmitter.Emit("error", "error getting list of containers err: "+err);
+    eventEmitter.emit("msg", "invalid containerId");
+    return "invalid containerId";
   }
 
-  eventEmitter.Emit("watching", containerId);
+  eventEmitter.emit("watching", containerId);
   console.log("watching Container id: "+containerId);
   var container = docker.getContainer(containerId);
-  container.wait(afterWait(containerId));
+  container.wait(afterWait(containerId, doRestart));
 }
 
-function afterWait (containerId) {
+function afterWait (containerId, doRestart) {
   return function (err, data) {
     if (err) {
-      console.log("error", "error waiting for container: "+containerId+" err: "+err);
-      eventEmitter.Emit("error", "error waiting for container: "+containerId+" err: "+err);
+      console.log("msg", "error waiting for container: "+containerId+" err: "+err);
+      eventEmitter.emit("msg", "error waiting for container: "+containerId+" err: "+err);
+      return err;
     }
-    eventEmitter.Emit("exited", containerId, data);
+    eventEmitter.emit("exited", containerId, data);
 
     if (doRestart) {
       console.log("restarting container id: "+containerId);
-      eventEmitter.Emit("restarting", containerId);
+      eventEmitter.emit("restarting", containerId);
       container.start(function () {
         watchContainer(containerId, doRestart);
       });
     }
   };
 }
-discover();
+
+// print process.argv
+process.argv.forEach(function (val, index, array) {
+  if(index === 2) {
+    console.log( ' looking for container : ' + val);
+    discover({containerId: val});
+  }
+});
+console.log('done');
+
+
