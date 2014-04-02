@@ -1,7 +1,7 @@
 /*
 useage
--cID : container ID
--iID : image id
+-c/containerId : container ID
+-i/imageId : image id (currently only image name)
 -r=[true/false] : restart container
 TODO:
 -d : deamon
@@ -11,12 +11,14 @@ TODO:
 */
 
 dm = require("./index.js");
-var argv = require('minimist')(process.argv.slice(2), {
-	string: ["cID", "iID"],
-	boolean: ["r"],
+parse = require('minimist');
+
+var argv = parse(process.argv.slice(2), {
+	boolean: 'r',
+	string: ["i", "c"],
 	alias: { 
-		cID: 'containerId',
-		iID: 'imageId'
+		c: 'containerId',
+		i: 'imageId'
 	},
 	default: {
 		r: false
@@ -24,11 +26,12 @@ var argv = require('minimist')(process.argv.slice(2), {
 });
 
 var opts = {};
-if (argv.hasOwnProperty("cID")) {
-	opts.containerId = argv.containerId;
-} else if (argv.hasOwnProperty("iID")) {
-	opts.iID = argv.iID;
+if (argv.hasOwnProperty("c")) {
+	opts.containerId = argv.c;
+} else if (argv.hasOwnProperty("i")) {
+	opts.imageId = argv.i;
 }
+
 opts.doRestart = argv.r;
 
 dm({

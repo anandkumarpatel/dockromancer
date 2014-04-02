@@ -47,7 +47,7 @@ function discover(dockerOpts, opts) {
  // other opts
  var doRestart = opts.hasOwnProperty("doRestart") ? opts.doRestart : false;
 
-  console.log("start");
+  console.log("start doRestart ", doRestart);
   docker.listContainers(function(err, containers) {
     if (err) {
       eventEmitter.emit("msg", "error getting list of containers err: "+err);
