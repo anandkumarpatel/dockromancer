@@ -45,7 +45,7 @@ function discover(dockerOpts, opts) {
   }
 
  // other opts
- var doRestart = opts.hasOwnProperty("doRestart") || false;
+ var doRestart = opts.hasOwnProperty("doRestart") ? opts.doRestart : false;
 
   console.log("start");
   docker.listContainers(function(err, containers) {
