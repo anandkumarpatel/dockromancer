@@ -10,7 +10,7 @@ TODO:
 -p : docker port
 */
 
-dm = require("index.js");
+dm = require("./index.js");
 var argv = require('minimist')(process.argv.slice(2), {
 	string: ["cID", "iID"],
 	boolean: ["r"],

@@ -16,10 +16,6 @@ var eventEmitter = new events.EventEmitter();
 var Docker = require('dockerode');
 var watching = {};
 
-docker.version(function(data) {
-  console.log(data);
-});
-
 // finds running containers and attaches wait listener no them
 function discover(dockerOpts, opts) {
   var docker = new Docker(dockerOpts);
