@@ -74,23 +74,23 @@ function watchContainer (containerId, doRestart) {
   eventEmitter.emit("watching", containerId);
   console.log("watching Container id: "+containerId);
   var container = docker.getContainer(containerId);
-  container.wait(afterWait(containerId, doRestart));
+  container.wait(afterWait(container, doRestart));
 }
 
-function afterWait (containerId, doRestart) {
+function afterWait (container, doRestart) {
   return function (err, data) {
     if (err) {
-      console.log("msg", "error waiting for container: "+containerId+" err: "+err);
-      eventEmitter.emit("msg", "error waiting for container: "+containerId+" err: "+err);
+      console.log("msg", "error waiting for container: "+container.id+" err: "+err);
+      eventEmitter.emit("msg", "error waiting for container: "+container.id+" err: "+err);
       return err;
     }
-    eventEmitter.emit("exited", containerId, data);
+    eventEmitter.emit("exited", container.id, data);
 
     if (doRestart) {
-      console.log("restarting container id: "+containerId);
-      eventEmitter.emit("restarting", containerId);
+      console.log("restarting container id: "+container.id);
+      eventEmitter.emit("restarting", container.id);
       container.start(function () {
-        watchContainer(containerId, doRestart);
+        watchContainer(container.id, doRestart);
       });
     }
   };
