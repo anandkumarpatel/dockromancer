@@ -14,7 +14,6 @@ var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
 var Docker = require('dockerode');
-var docker = new Docker({host: 'http://localhost', port: 4242});
 var watching = {};
 
 docker.version(function(data) {
@@ -22,31 +21,34 @@ docker.version(function(data) {
 });
 
 // finds running containers and attaches wait listener no them
-function discover(opts) {
+function discover(dockerOpts, opts) {
+  var docker = new Docker(dockerOpts);
+
   // setup filter
   var filter = function() {
     return true;
   };
-  if (opts["containerId"]) {
+
+  if (opts.hasOwnProperty("containerId")) {
     filter = function (obj) {
       if (obj.Id.indexOf(opts.containerId) === 0) {
         return true;
       }
       return false;
     };
-  } else if (opts.imageId) {
+  } else if (opts.hasOwnProperty("imageId")) {
     filter = function (obj) {
       if (obj.Image.indexOf(opts.imageId) === 0) {
         return true;
       }
       return false;
     };
-  } else if (opts.custom) {
+  } else if (opts.hasOwnProperty("custom")) {
     filter = custom;
   }
 
  // other opts
- var doRestart = opts.doRestart || false;
+ var doRestart = opts.hasOwnProperty("doRestart") || false;
 
   console.log("start");
   docker.listContainers(function(err, containers) {
@@ -61,6 +63,7 @@ function discover(opts) {
       }
     });
   });
+  return eventEmitter;
 }
 
 // watch continer which matches id
@@ -96,13 +99,4 @@ function afterWait (containerId, doRestart) {
   };
 }
 
-// print process.argv
-process.argv.forEach(function (val, index, array) {
-  if(index === 2) {
-    console.log( ' looking for container : ' + val);
-    discover({containerId: val});
-  }
-});
-console.log('done');
-
-
+module.exports = discover;
