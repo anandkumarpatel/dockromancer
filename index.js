@@ -15,10 +15,11 @@ var eventEmitter = new events.EventEmitter();
 
 var Docker = require('dockerode');
 var watching = {};
+var docker = nil;
 
 // finds running containers and attaches wait listener no them
 function discover(dockerOpts, opts) {
-  var docker = new Docker(dockerOpts);
+  docker = new Docker(dockerOpts);
 
   // setup filter
   var filter = function() {
