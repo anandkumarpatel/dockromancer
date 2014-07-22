@@ -10,13 +10,13 @@ TODO:
 -p : docker port
 */
 
-dm = require("./index.js");
-parse = require('minimist');
+var dm = require("./index.js");
+var parse = require('minimist');
 
 var argv = parse(process.argv.slice(2), {
-	boolean: 'r',
+	boolean: ['r', 's'],
 	string: ["i", "c"],
-	alias: { 
+	alias: {
 		c: 'containerId',
 		i: 'imageId'
 	},
@@ -34,9 +34,13 @@ if (argv.hasOwnProperty("c")) {
 
 opts.doRestart = argv.r;
 
-dm({
-	host: 'http://localhost', 
-	port: 4242
-}, opts);
-
+// check if socket
+if (!argv.s) {
+	dm({
+		host: 'http://localhost',
+		port: 4242
+	}, opts);
+} else {
+	dm({socketPath: '/var/run/docker.sock'}, opts);
+}
 console.log('done');
