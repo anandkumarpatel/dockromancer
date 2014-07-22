@@ -1,4 +1,4 @@
-// anandp: 
+// anandp:
 // dockromancer: maintains zero downtime for containers
 // restarts killed containers
 // returns exit code
@@ -9,7 +9,7 @@
 // add a way to stop listening
 // add way to change container
 
-/* 
+/*
   emits:
   error: on error
   watching: emited when container is beging watched. contaier id is passed back
@@ -92,7 +92,7 @@ function watchContainer (containerId, doRestart) {
   eventEmitter.emit("watching", containerId);
   console.log("watching Container id: "+containerId);
   var container = docker.getContainer(containerId);
-  watching.containerId = {
+  watching[containerId] = {
     doRestart: doRestart,
     nextContainer: {}
   };
@@ -106,12 +106,13 @@ function afterWait (container) {
       eventEmitter.emit("error", "error waiting for container: "+container.id+" err: "+err);
       return err;
     }
-    var doRestart = watching.doRestart;
+    var doRestart = watching[container.id].doRestart;
+    console.log("container died", container, data, watching[container.id]);
     eventEmitter.emit("exited", container.id, data);
     if (doRestart) {
       console.log("restarting container id: "+container.id);
       eventEmitter.emit("restarting", container.id);
-      if (watching.nextContainer) {
+      if (watching[container.id].nextContainer) {
         startNextContainer(container.id);
       } else {
         container.start(afterContainerStart(container.id, doRestart));
@@ -122,17 +123,17 @@ function afterWait (container) {
 
 function afterContainerStart(containerId, doRestart) {
   return function (err, data) {
-    watchContainer(container.id, doRestart);
+    watchContainer(containerId, doRestart);
   };
 }
 
 function startNextContainer(currentContainterId) {
-  var imageId = watching.currentContainterId.nextContainer.id;
-  var cmd = watching.currentContainterId.nextContainer.cmd;
-  var doRestart = watching.currentContainterId.nextContainer.doRestart;
+  var imageId = watching[currentContainterId].nextContainer.id;
+  var cmd = watching[currentContainterId].nextContainer.cmd;
+  var doRestart = watching[currentContainterId].nextContainer.doRestart;
 
   docker.createContainer({
-    Image: imageId, 
+    Image: imageId,
     Cmd: cmd
   }, function(err, container) {
     container.start(afterContainerStart(container.id, doRestart));
@@ -165,7 +166,7 @@ function setNextContainer(containerId, nextContainer) {
     return err;
   }
   eventEmitter.emit("addingNewContainer", containerId, nextContainer);
-  watching.containerId.nextContainer = nextContainer;
+  watching[containerId].nextContainer = nextContainer;
 }
 
 function setRestart(containerId, doRestart) {
@@ -184,7 +185,7 @@ function setRestart(containerId, doRestart) {
   }
 
   eventEmitter.emit("updateRestart", containerId, nextContainer);
-  watching.containerId.doRestart = doRestart;
+  watching[containerId].doRestart = doRestart;
 }
 
 module.exports = discover;
