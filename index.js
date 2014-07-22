@@ -93,8 +93,7 @@ function watchContainer (containerId, doRestart) {
   console.log("watching Container id: "+containerId);
   var container = docker.getContainer(containerId);
   watching[containerId] = {
-    doRestart: doRestart,
-    nextContainer: {}
+    doRestart: doRestart
   };
   container.wait(afterWait(container));
 }
@@ -172,19 +171,19 @@ function setNextContainer(containerId, nextContainer) {
 function setRestart(containerId, doRestart) {
   // validate inputs
   var err = null;
-  if (! nextContainer.hasOwnProperty(containerId)) {
+  if (! containerId.hasOwnProperty(containerId)) {
     err = new Error("not watching containerId");
     eventEmitter.emit("error", err);
     return err;
   }
-  if (!nextContainer.hasOwnProperty("doRestart") ||
-      typeof nextContainer.doRestart !== "boolean") {
+  if (!containerId.hasOwnProperty("doRestart") ||
+      typeof containerId.doRestart !== "boolean") {
     err = new Error("invalid input, doRestart needs to be a boolean");
     eventEmitter.emit("error", err);
     return err;
   }
 
-  eventEmitter.emit("updateRestart", containerId, nextContainer);
+  eventEmitter.emit("updateRestart", containerId, containerId);
   watching[containerId].doRestart = doRestart;
 }
 
